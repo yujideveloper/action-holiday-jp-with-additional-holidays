@@ -1,0 +1,5 @@
+node_modules/
+
+# Source maps (not needed in dist)
+dist/*.map
+dist/sourcemap-register.js

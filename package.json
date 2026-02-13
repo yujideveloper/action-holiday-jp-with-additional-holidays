@@ -1,0 +1,28 @@
+{
+  "name": "check-jp-holidays-and-additional-holidays",
+  "version": "0.1.0",
+  "description": "日本の祝日または追加の休日かどうかを判定する GitHub Actions",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/index.js -o dist --license THIRD-PARTY && cp dist/THIRD-PARTY . && rm dist/THIRD-PARTY",
+    "test": "node src/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yujideveloper/action-holiday-jp-with-additional-holidays.git"
+  },
+  "keywords": [
+    "actions",
+    "holiday",
+    "japan"
+  ],
+  "author": "Yuji Hanamura <yuji.developer@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@holiday-jp/holiday_jp": "^2.5.1"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3"
+  }
+}

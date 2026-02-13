@@ -1,0 +1,28 @@
+name: Check JP Holidays and Additional Holidays
+description: 日本の祝日または追加の休日かどうかを判定する
+inputs:
+  date:
+    description: '判定する日付（ISO 8601 形式、例: 2025-01-01）。指定しない場合は今日の日付を使用'
+    required: false
+    default: ''
+  additional_holidays:
+    description: '追加の休日（MM-DD または YYYY-MM-DD 形式、カンマ区切り、例: 12-29,2025-01-04）。MM-DD は毎年、YYYY-MM-DD は特定の年のみ'
+    required: false
+    default: ''
+  additional_holidays_file:
+    description: '追加の休日を定義したファイルのパス（1行1日付、MM-DD または YYYY-MM-DD 形式）。additional_holidays と併用可能（マージされる）'
+    required: false
+    default: ''
+outputs:
+  is_holiday:
+    description: 祝日または追加の休日かどうか (true/false)
+  holiday_name:
+    description: 祝日の場合はその名前（追加の休日の場合は空）
+  is_additional_holiday:
+    description: 追加の休日かどうか (true/false)
+  date:
+    description: チェックした日付（JST、YYYY-MM-DD 形式）
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'

@@ -1,0 +1,205 @@
+---
+name: Test and Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Check if dist is up-to-date
+        run: |
+          if [ -n "$(git status --porcelain dist/)" ]; then
+            echo "Error: dist/ is not up-to-date. Please run 'npm run build' and commit the changes."
+            git diff dist/
+            exit 1
+          fi
+
+  test-action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check today
+        id: check_today
+        uses: ./
+
+      - name: Show result
+        run: |
+          echo "Date: ${{ steps.check_today.outputs.date }}"
+          echo "Is Holiday: ${{ steps.check_today.outputs.is_holiday }}"
+          echo "Holiday Name: ${{ steps.check_today.outputs.holiday_name }}"
+          echo "Is Additional Holiday: ${{ steps.check_today.outputs.is_additional_holiday }}"
+
+  test-dates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test national holiday (2026-01-01)
+        id: test_national_holiday
+        uses: ./
+        with:
+          date: '2026-01-01'
+
+      - name: Verify national holiday
+        run: |
+          if [ "${{ steps.test_national_holiday.outputs.is_holiday }}" != "true" ]; then
+            echo "Error: Expected holiday but got non-holiday"
+            exit 1
+          fi
+          if [ "${{ steps.test_national_holiday.outputs.holiday_name }}" != "元日" ]; then
+            echo "Error: Expected '元日' but got '${{ steps.test_national_holiday.outputs.holiday_name }}'"
+            exit 1
+          fi
+          echo "✓ Test passed: 2026-01-01 is 元日"
+
+      - name: Test working day (2026-01-06)
+        id: test_working_day
+        uses: ./
+        with:
+          date: '2026-01-06'
+
+      - name: Verify working day
+        run: |
+          if [ "${{ steps.test_working_day.outputs.is_holiday }}" != "false" ]; then
+            echo "Error: Expected working day but got holiday"
+            exit 1
+          fi
+          if [ "${{ steps.test_working_day.outputs.is_additional_holiday }}" != "false" ]; then
+            echo "Error: Expected non-additional-holiday"
+            exit 1
+          fi
+          echo "✓ Test passed: 2026-01-06 is a working day"
+
+  test-additional-holidays:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test with additional holidays (string)
+        id: test_additional_string
+        uses: ./
+        with:
+          date: '2026-12-29'
+          additional_holidays: '12-29,12-30,12-31,01-01,01-02,01-03'
+
+      - name: Verify additional holiday (string)
+        run: |
+          if [ "${{ steps.test_additional_string.outputs.is_holiday }}" != "true" ]; then
+            echo "Error: Expected holiday but got non-holiday"
+            exit 1
+          fi
+          if [ "${{ steps.test_additional_string.outputs.is_additional_holiday }}" != "true" ]; then
+            echo "Error: Expected additional holiday"
+            exit 1
+          fi
+          echo "✓ Test passed: 2026-12-29 is an additional holiday"
+
+      - name: Create holidays file
+        run: |
+          mkdir -p .github
+          cat > .github/holidays.txt << 'EOF'
+          # 年末年始
+          12-29
+          12-30
+          12-31
+          01-01
+          01-02
+          01-03
+          EOF
+
+      - name: Test with additional holidays (file)
+        id: test_additional_file
+        uses: ./
+        with:
+          date: '2026-12-30'
+          additional_holidays_file: '.github/holidays.txt'
+
+      - name: Verify additional holiday (file)
+        run: |
+          if [ "${{ steps.test_additional_file.outputs.is_holiday }}" != "true" ]; then
+            echo "Error: Expected holiday but got non-holiday"
+            exit 1
+          fi
+          if [ "${{ steps.test_additional_file.outputs.is_additional_holiday }}" != "true" ]; then
+            echo "Error: Expected additional holiday"
+            exit 1
+          fi
+          echo "✓ Test passed: 2026-12-30 is an additional holiday (from file)"
+
+      - name: Test with specific year holiday
+        id: test_specific_year
+        uses: ./
+        with:
+          date: '2026-01-04'
+          additional_holidays: '2026-01-04'
+
+      - name: Verify specific year holiday
+        run: |
+          if [ "${{ steps.test_specific_year.outputs.is_holiday }}" != "true" ]; then
+            echo "Error: Expected holiday but got non-holiday"
+            exit 1
+          fi
+          if [ "${{ steps.test_specific_year.outputs.is_additional_holiday }}" != "true" ]; then
+            echo "Error: Expected additional holiday"
+            exit 1
+          fi
+          echo "✓ Test passed: 2026-01-04 is an additional holiday (specific year)"
+
+      - name: Test with specific year holiday (different year)
+        id: test_different_year
+        uses: ./
+        with:
+          date: '2027-01-04'
+          additional_holidays: '2026-01-04'
+
+      - name: Verify different year is not holiday
+        run: |
+          if [ "${{ steps.test_different_year.outputs.is_holiday }}" != "false" ]; then
+            echo "Error: Expected working day but got holiday"
+            exit 1
+          fi
+          echo "✓ Test passed: 2027-01-04 is not a holiday (2026-01-04 only)"
+
+      - name: Test merge (file + string)
+        id: test_merge
+        uses: ./
+        with:
+          date: '2026-01-04'
+          additional_holidays_file: '.github/holidays.txt'
+          additional_holidays: '2026-01-04'
+
+      - name: Verify merged holidays
+        run: |
+          if [ "${{ steps.test_merge.outputs.is_holiday }}" != "true" ]; then
+            echo "Error: Expected holiday but got non-holiday"
+            exit 1
+          fi
+          echo "✓ Test passed: Merge works correctly"
