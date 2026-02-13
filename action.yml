@@ -1,5 +1,9 @@
 name: Check JP Holidays and Additional Holidays
 description: 日本の祝日または追加の休日かどうかを判定する
+branding:
+  icon: 'calendar'
+  color: 'red'
+
 inputs:
   date:
     description: '判定する日付（ISO 8601 形式、例: 2025-01-01）。指定しない場合は今日の日付を使用'
