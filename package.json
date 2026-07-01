@@ -24,6 +24,6 @@
     "@holiday-jp/holiday_jp": "^2.5.1"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.3"
+    "@vercel/ncc": "^0.44.1"
   }
 }
