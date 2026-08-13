@@ -1,6 +1,6 @@
 {
   "name": "check-jp-holidays-and-additional-holidays",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "日本の祝日または追加の休日かどうかを判定する GitHub Actions",
   "type": "module",
   "main": "dist/index.js",
