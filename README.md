@@ -66,7 +66,7 @@ jobs:
     steps:
       - name: Check if today is a holiday
         id: check
-        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.3.1
+        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.4.0
 
       - name: Show result
         run: |
@@ -77,7 +77,7 @@ jobs:
 
       - name: Check specific date
         id: check_date
-        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.3.1
+        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.4.0
         with:
           date: '2025-01-01'
 
@@ -87,13 +87,13 @@ jobs:
 
       - name: Check with additional holidays (comma-separated)
         id: check_with_holidays
-        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.3.1
+        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.4.0
         with:
           additional_holidays: '12-29,12-30,12-31,01-01,01-02,01-03'
 
       - name: Check with holidays file
         id: check_with_file
-        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.3.1
+        uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.4.0
         with:
           additional_holidays_file: '.github/holidays.txt'
 ```
@@ -110,7 +110,7 @@ jobs:
 ### カンマ区切り文字列で指定
 
 ```yaml
-- uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.3.1
+- uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.4.0
   with:
     # 毎年の年末年始 + 2025 年 1/4 のみ
     additional_holidays: '12-29,12-30,12-31,01-01,01-02,01-03,2025-01-04'
@@ -140,7 +140,7 @@ jobs:
 ```
 
 ```yaml
-- uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.3.1
+- uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.4.0
   with:
     additional_holidays_file: '.github/holidays.txt'
 ```
@@ -155,7 +155,7 @@ jobs:
 `additional_holidays` と `additional_holidays_file` は同時に指定でき、両方が指定された場合はマージされます（重複は自動的に除去されます）。
 
 ```yaml
-- uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.3.1
+- uses: yujideveloper/action-holiday-jp-with-additional-holidays@v0.4.0
   with:
     # ファイルから基本的な休日を読み込み
     additional_holidays_file: '.github/holidays.txt'
