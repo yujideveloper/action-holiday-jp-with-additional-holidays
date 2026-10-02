@@ -31,6 +31,7 @@ jobs:
         env:
           BUMP: ${{ inputs.bump }}
         run: |
+          echo "previous=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
           npm version "$BUMP" --no-git-tag-version
           version="$(jq -r .version package.json)"
           sed -i -E "s#(yujideveloper/action-holiday-jp-with-additional-holidays@)v[0-9]+\.[0-9]+\.[0-9]+#\1v${version}#g" README.md
@@ -39,7 +40,9 @@ jobs:
       - name: Create pull request
         env:
           GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ inputs.bump }}
           VERSION: ${{ steps.bump.outputs.version }}
+          PREVIOUS: ${{ steps.bump.outputs.previous }}
         run: |
           branch="chore/bump-version-to-${VERSION}"
           git config user.name 'github-actions[bot]'
@@ -47,8 +50,14 @@ jobs:
           git switch -c "$branch"
           git commit -am "chore: bump version to ${VERSION}"
           git push origin "$branch"
+          notes="$(gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="v${VERSION}" \
+            -f target_commitish="$GITHUB_REF_NAME" \
+            -f previous_tag_name="v${PREVIOUS}" \
+            --jq .body)"
+          body="$(printf 'v%s → v%s（%s） リリース\n\n%s\n' "$PREVIOUS" "$VERSION" "$BUMP" "$notes")"
           gh pr create \
             --base "$GITHUB_REF_NAME" \
             --head "$branch" \
             --title "chore: bump version to ${VERSION}" \
-            --body "v${VERSION} をリリースする。マージするとタグとリリースが作られる。"
+            --body "$body"
